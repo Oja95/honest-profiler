@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include "time.h"
 
 #include <string>
 #include <jvmti.h>
@@ -8,6 +9,7 @@
 #include "thread_map.h"
 #include "profiler.h"
 #include "controller.h"
+#include "ShmController.h"
 
 #if defined(__APPLE__) || defined(__FreeBSD__)
 #define GETENV_NEW_THREAD_ASYNC_UNSAFE
@@ -16,6 +18,7 @@
 static ConfigurationOptions configuration;
 static Profiler* prof;
 static Controller* controller;
+static ShmController* shm_controller;
 static ThreadMap threadMap;
 
 // This has to be here, or the VM turns off class loading events.
@@ -73,6 +76,17 @@ void JNICALL OnVMInit(jvmtiEnv *jvmti, JNIEnv *jniEnv, jthread thread) {
     if (!configuration.host.empty() && !configuration.port.empty()) {
         controller->start();
     }
+
+
+    shm_controller->start();
+
+    struct timespec start, stop;
+    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &start);
+    // Some operation
+    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &stop);
+    double res = stop.tv_nsec - start.tv_nsec;
+    std::cout << res << std::endl;
+
 }
 
 void JNICALL OnClassPrepare(jvmtiEnv *jvmti_env, JNIEnv *jni_env,
@@ -336,6 +350,7 @@ AGENTEXPORT jint JNICALL Agent_OnLoad(JavaVM *jvm, char *options, void *reserved
 
     prof = new Profiler(jvm, jvmti, configuration, threadMap);
     controller = new Controller(jvm, jvmti, prof, configuration);
+    shm_controller = new ShmController();
 
     return 0;
 }
@@ -348,6 +363,7 @@ AGENTEXPORT void JNICALL Agent_OnUnload(JavaVM *vm) {
 
     delete controller;
     delete prof;
+    delete shm_controller;
 }
 
 void bootstrapHandle(int signum, siginfo_t *info, void *context) {

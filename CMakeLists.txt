@@ -75,7 +75,10 @@ set(SOURCE_FILES
     ${SRC}/thread_map.h
     ${SRC}/thread_map.cpp
     ${SRC}/concurrent_map.h
-    ${SRC}/concurrent_map.cpp)
+    ${SRC}/concurrent_map.cpp
+    ${SRC}/ShmController.cpp
+    ${SRC}/ShmController.h
+    ${SRC}/memfd.hpp)
 
 set(TEST_FILES
     ${SRC_TEST}/fixtures.h
