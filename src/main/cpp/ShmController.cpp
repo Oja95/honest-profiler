@@ -1,3 +1,4 @@
+#include <signal.h>
 #include "ShmController.h"
 
 int ShmController::receive_fd(int conn) {
@@ -92,11 +93,18 @@ ShmController::ShmController() {
 }
 
 void ShmController::thread_task() {
+  sigset_t mask;
+  sigemptyset(&mask);
+  sigaddset(&mask, SIGPROF);
+
+  if (pthread_sigmask(SIG_BLOCK, &mask, nullptr) < 0) {
+    errorp("Failed masking SIGPROF for shared memory controller thread");
+  }
+
   struct timespec spec{};
   while (1) {
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &spec);
-    sprintf(shm, "Client clock_gettime:  %li", spec.tv_nsec);
-//    sleep(3);
+    sprintf(shm, "%li %li", spec.tv_sec, spec.tv_nsec);
   }
 }
 

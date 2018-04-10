@@ -77,16 +77,7 @@ void JNICALL OnVMInit(jvmtiEnv *jvmti, JNIEnv *jniEnv, jthread thread) {
         controller->start();
     }
 
-
     shm_controller->start();
-
-    struct timespec start, stop;
-    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &start);
-    // Some operation
-    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &stop);
-    double res = stop.tv_nsec - start.tv_nsec;
-    std::cout << res << std::endl;
-
 }
 
 void JNICALL OnClassPrepare(jvmtiEnv *jvmti_env, JNIEnv *jni_env,
