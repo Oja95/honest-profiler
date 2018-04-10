@@ -1,4 +1,5 @@
 #include "signal_handler.h"
+#include <time.h>
 
 namespace {
 
@@ -29,15 +30,28 @@ bool SignalHandler::updateSigprofInterval() {
 bool SignalHandler::updateSigprofInterval(const int timingInterval) {
     if (timingInterval == currentInterval)
         return true;
-    static struct itimerval timer;
-    // timingInterval is in milliseconds, not seconds.
-    timer.it_interval.tv_sec = timingInterval / 1000;
-    timer.it_interval.tv_usec = (timingInterval * 1000) % 1000000;
-    timer.it_value = timer.it_interval;
-    if (setitimer(ITIMER_PROF, &timer, 0) == -1) {
-        logError("Scheduling profiler interval failed with error %d\n", errno);
+
+    struct sigevent sevent;
+    timer_t timert;
+    sevent.sigev_notify = SIGEV_SIGNAL;
+    sevent.sigev_signo = SIGPROF;
+    sevent.sigev_value.sival_ptr = &timert;
+
+    if (timer_create(CLOCK_PROCESS_CPUTIME_ID, &sevent, &timert) == -1) {
+        logError("Failed creating timer with timer_create(), failed with error %d\n", errno);
         return false;
     }
+
+    struct itimerspec timerspec;
+    // Try with 100 microsecond interval.
+    timerspec.it_interval.tv_nsec = 100000;
+    timerspec.it_value.tv_nsec = timerspec.it_interval.tv_nsec;
+
+    if (timer_settime(timert, 0, &timerspec, NULL) == -1) {
+        logError("Scheduling profiler interval (timer_settime) failed with error %d\n", errno);
+        return false;
+    }
+
     currentInterval = timingInterval;
     return true;
 }
