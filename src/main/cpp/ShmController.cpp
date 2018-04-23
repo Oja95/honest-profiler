@@ -1,6 +1,11 @@
 #include <signal.h>
 #include "ShmController.h"
 
+
+void send_pid(int conn, pid_t* pid) {
+  write(conn, pid, sizeof(pid));
+}
+
 int ShmController::receive_fd(int conn) {
   struct msghdr msgh{};
   struct iovec iov{};
@@ -58,7 +63,11 @@ int ShmController::connect_to_server_and_get_memfd_fd() {
   ret = connect(conn, (struct sockaddr *) &address, sizeof(struct sockaddr_un));
   if (ret != 0) errorp("connect()");
 
-  return receive_fd(conn);
+  int fd = receive_fd(conn);
+  pid_t pid = getpid();
+  send_pid(conn, &pid);
+
+  return fd;
 }
 
 ShmController::ShmController() {
@@ -92,8 +101,10 @@ ShmController::ShmController() {
   printf("Received from server: %s\n", shm);
 }
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wmissing-noreturn"
 void ShmController::thread_task() {
-  sigset_t mask;
+  sigset_t mask{};
   sigemptyset(&mask);
   sigaddset(&mask, SIGPROF);
 
@@ -102,11 +113,12 @@ void ShmController::thread_task() {
   }
 
   struct timespec spec{};
-  while (1) {
+  while (true) {
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &spec);
     sprintf(shm, "%li %li", spec.tv_sec, spec.tv_nsec);
   }
 }
+#pragma clang diagnostic pop
 
 void ShmController::start() {
   std::thread t1(&ShmController::thread_task, this);
