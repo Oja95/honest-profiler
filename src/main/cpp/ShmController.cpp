@@ -113,7 +113,10 @@ void ShmController::thread_task() {
   }
 
   struct timespec spec{};
+  struct timespec ts{};
+  ts.tv_nsec = 50000;
   while (true) {
+    nanosleep(&ts, nullptr);
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &spec);
     sprintf(shm, "%li %li", spec.tv_sec, spec.tv_nsec);
   }
