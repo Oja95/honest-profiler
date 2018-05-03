@@ -187,6 +187,7 @@ public:
 };
 
 void bootstrapHandle(int signum, siginfo_t *info, void *context);
+void sigAlrmHandle(int sig, siginfo_t *siginfo, void *context);
 
 #ifdef __MACH__
 static clock_serv_t osx_clock;

@@ -1,8 +1,9 @@
 #include <signal.h>
 #include "ShmController.h"
+#include "globals.h"
 
 
-void send_pid(int conn, pid_t* pid) {
+void send_pid(int conn, pid_t *pid) {
   write(conn, pid, sizeof(pid));
 }
 
@@ -101,32 +102,14 @@ ShmController::ShmController() {
   printf("Received from server: %s\n", shm);
 }
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wmissing-noreturn"
-void ShmController::thread_task() {
-  sigset_t mask{};
-  sigemptyset(&mask);
-  sigaddset(&mask, SIGPROF);
-
-  if (pthread_sigmask(SIG_BLOCK, &mask, nullptr) < 0) {
-    errorp("Failed masking SIGPROF for shared memory controller thread");
-  }
-
-  struct timespec spec{};
-  struct timespec ts{};
-  ts.tv_nsec = 50000;
-  while (true) {
-    nanosleep(&ts, nullptr);
-    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &spec);
-    sprintf(shm, "%li %li", spec.tv_sec, spec.tv_nsec);
-  }
-}
-#pragma clang diagnostic pop
-
 void ShmController::start() {
-  std::thread t1(&ShmController::thread_task, this);
-  t1.detach();
-  // TODO: stop method for stopping the thread
+  struct sigaction sa;
+  sa.sa_handler = nullptr;
+  sa.sa_sigaction = &sigAlrmHandle;
+  sa.sa_flags = SA_RESTART | SA_SIGINFO;
+  sigemptyset(&sa.sa_mask);
+
+  if (sigaction(SIGALRM, &sa, nullptr) != 0) {
+    logError("Scheduling profiler action failed with error %d\n", errno);
+  }
 }
-
-

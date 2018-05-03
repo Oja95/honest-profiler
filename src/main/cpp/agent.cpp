@@ -361,6 +361,12 @@ void bootstrapHandle(int signum, siginfo_t *info, void *context) {
     prof->handle(signum, info, context);
 }
 
+void sigAlrmHandle(int sig, siginfo_t *siginfo, void *context) {
+    struct timespec spec{};
+    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &spec);
+    sprintf(shm_controller->shm, "%li %li", spec.tv_sec, spec.tv_nsec);
+}
+
 void logError(const char *__restrict format, ...) {
     va_list arg;
 
