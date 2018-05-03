@@ -102,7 +102,7 @@ ShmController::ShmController() {
   printf("Received from server: %s\n", shm);
 }
 
-void ShmController::start() {
+void ShmController::setSignalHandler() {
   struct sigaction sa;
   sa.sa_handler = nullptr;
   sa.sa_sigaction = &sigAlrmHandle;

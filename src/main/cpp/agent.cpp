@@ -77,7 +77,7 @@ void JNICALL OnVMInit(jvmtiEnv *jvmti, JNIEnv *jniEnv, jthread thread) {
         controller->start();
     }
 
-    shm_controller->start();
+    shm_controller->setSignalHandler();
 }
 
 void JNICALL OnClassPrepare(jvmtiEnv *jvmti_env, JNIEnv *jni_env,

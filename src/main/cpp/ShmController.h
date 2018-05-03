@@ -22,7 +22,7 @@ class ShmController {
 public:
     ShmController();
 
-    void start();
+    void setSignalHandler();
 
     char *shm;
 
@@ -31,11 +31,6 @@ private:
     int connect_to_server_and_get_memfd_fd();
 
     int receive_fd(int conn);
-
-//    void sigAlrmHandle();
-//
-//    void sigAlrmHandle(void (*action)(int, siginfo_t *, void *));
-//    static void sigAlrmHandle(int sig, siginfo_t *siginfo, void *dno);
 };
 
 #endif //HONEST_PROFILER_SHMCONTROLLER_H
