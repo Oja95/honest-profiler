@@ -76,7 +76,7 @@ void callbackToRunProcessor(jvmtiEnv *jvmti_env, JNIEnv *jni_env, void *arg) {
     //Avoid having the processor thread also receive the PROF signals
     sigset_t mask;
     sigemptyset(&mask);
-    sigaddset(&mask, SIGPROF);
+    sigaddset(&mask, SIGALRM);
     if (pthread_sigmask(SIG_BLOCK, &mask, NULL) < 0) {
         logError("ERROR: failed to set processor thread signal mask\n");
     }
@@ -114,7 +114,7 @@ void Processor::stop() {
     isRunning_.store(false, std::memory_order_seq_cst);
     std::cout << "Stopping sampling\n";
     while (workerDone.test_and_set(std::memory_order_seq_cst)) sched_yield();
-    signal(SIGPROF, SIG_IGN);
+    signal(SIGALRM, SIG_IGN);
 }
 
 bool Processor::isRunning() const {

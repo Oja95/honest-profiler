@@ -213,7 +213,7 @@ void JNICALL OnThreadEnd(jvmtiEnv *jvmti_env, JNIEnv *jni_env, jthread thread) {
 
 static bool RegisterJvmti(jvmtiEnv *jvmti) {
     sigemptyset(&prof_signal_mask);
-    sigaddset(&prof_signal_mask, SIGPROF);
+    sigaddset(&prof_signal_mask, SIGALRM);
     // Create the list of callbacks to be called on given events.
     jvmtiEventCallbacks *callbacks = new jvmtiEventCallbacks();
     memset(callbacks, 0, sizeof(jvmtiEventCallbacks));

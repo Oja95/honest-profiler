@@ -31,10 +31,11 @@ bool SignalHandler::updateSigprofInterval(const int timingInterval) {
         return true;
     static struct itimerval timer;
     // timingInterval is in milliseconds, not seconds.
-    timer.it_interval.tv_sec = timingInterval / 1000;
-    timer.it_interval.tv_usec = (timingInterval * 1000) % 1000000;
+//    timer.it_interval.tv_sec = timingInterval / 1000;
+//    timer.it_interval.tv_usec = (timingInterval * 1000) % 1000000;
+    timer.it_interval.tv_usec = 1;
     timer.it_value = timer.it_interval;
-    if (setitimer(ITIMER_PROF, &timer, 0) == -1) {
+    if (setitimer(ITIMER_REAL, &timer, 0) == -1) {
         logError("Scheduling profiler interval failed with error %d\n", errno);
         return false;
     }
@@ -58,7 +59,7 @@ struct sigaction SignalHandler::SetAction(void (*action)(int, siginfo_t *, void 
     sigemptyset(&sa.sa_mask);
 
     struct sigaction old_handler;
-    if (sigaction(SIGPROF, &sa, &old_handler) != 0) {
+    if (sigaction(SIGALRM, &sa, &old_handler) != 0) {
         logError("Scheduling profiler action failed with error %d\n", errno);
         return old_handler;
     }

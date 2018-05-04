@@ -7,7 +7,7 @@ void controllerRunnable(jvmtiEnv *jvmti_env, JNIEnv *jni_env, void *arg) {
     sigset_t mask;
 
     sigemptyset(&mask);
-    sigaddset(&mask, SIGPROF);
+    sigaddset(&mask, SIGALRM);
 
     if (pthread_sigmask(SIG_BLOCK, &mask, NULL) < 0) {
         logError("ERROR: unable to set controller thread signal mask\n");
